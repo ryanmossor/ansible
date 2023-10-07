@@ -1,0 +1,14 @@
+---
+
+- hosts: localhost
+  become: yes
+  pre_tasks:
+    - name: Update/upgrade packages
+      apt: 
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 43200
+      changed_when: False  
+
+  tasks:
+    - include: tasks/packages.yml

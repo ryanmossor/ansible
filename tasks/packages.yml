@@ -1,0 +1,125 @@
+---
+# - name: Add indicator-sound-switcher repository
+#   apt_repository:
+#     repo: 'ppa:yktooo/ppa/ubuntu jammy main'
+#     state: present
+
+- name: Agree to EULA
+  debconf:
+    name: ttf-mscorefonts-installer
+    question: msttcorefonts/accepted-mscorefonts-eula
+    vtype: boolean
+    value: true
+
+- name: Install packages
+  apt: 
+    name:
+      - android-sdk-platform-tools
+      - bat
+      - devilspie2
+      - fzf
+      - git
+      - glibc-source
+      - gparted
+      - htop
+      - indicator-sound-switcher
+      - jq
+      - nala
+      - neofetch
+      - openssh-client
+      - openssh-server
+      - redshift
+      - ripgrep
+      - rofi
+      - steam
+      - stow
+      - tmux
+      - ttf-mscorefonts-installer
+      - ufw
+      - vim-gtk3
+      - xclip
+      - zsh
+    state: latest
+
+- name: Install Discord
+  flatpak:
+    name: com.discordapp.Discord
+    state: present
+
+- name: Install Postman
+  flatpak:
+    name: com.getpostman.Postman
+    state: present
+
+- name: Install OBS
+  flatpak:
+    name: com.obsproject.Studio
+    state: present
+
+- name: Install Obsidian
+  flatpak:
+    name: md.obsidian.Obsidian
+    state: present
+
+- name: Install Dolphin
+  flatpak:
+    name: org.DolphinEmu.dolphin-emu
+    state: present
+
+- name: Install OnlyOffice
+  flatpak:
+    name: org.onlyoffice.desktopeditors
+    state: present
+
+- name: Install Qemu/Virt-Manager
+  apt:
+    name:
+      - bridge-utils
+      - libvirt-clients
+      - libvirt-daemon
+      - libvirt-daemon-system
+      - python3
+      - python3-pip
+      - qemu-kvm
+      - qemu-system
+      - qemu-utils
+      - virt-manager
+      - virtinst
+
+- name: Add user to VM groups
+  user:
+    name: ryan
+    groups: libvirt,libvirt-qemu,kvm,input,disk
+    append: yes
+
+- name: Remove unwanted packages
+  apt:
+    name:
+      - drawing
+      - 'libreoffice*'
+      - hexchat
+      - hypnotix
+      - redshift-gtk
+      - rhythmbox
+      - rhythmbox-plugins
+      - rhythmbox-plugin-tray-icon
+      - sticky
+      - thingy
+      - 'thunderbird*'
+      - transmission-gtk
+      - warpinator
+      - xed-dbg
+      - xed
+      - virt-viewer 
+      - libgovirt-common 
+      - libgovirt2 
+    state: absent
+    purge: true
+    
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes
+
+- name: Clean
+  apt:
+    autoclean: yes
