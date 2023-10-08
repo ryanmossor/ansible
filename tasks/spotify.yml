@@ -1,0 +1,30 @@
+- name: Install dependencies
+  apt: 
+    name:
+      - cargo
+      - spotify-client # TODO: check if spotify-client updated; if not, skip following tasks
+    state: latest
+  become: true
+
+- name: Clone repository
+  git:
+    repo: https://github.com/abba23/spotify-adblock.git
+    dest: /tmp/spotify-adblock
+  register: git_clone_result
+
+- name: Build
+  make:
+    chdir: /tmp/spotify-adblock
+  when: git_clone_result.changed
+
+- name: Make install
+  make:
+    chdir: /tmp/spotify-adblock
+    target: install
+  become: true
+  when: git_clone_result.changed
+
+- name: Remove Adblock directory
+  file:
+    path: /tmp/spotify-adblock
+    state: absent

@@ -1,0 +1,35 @@
+# TODO: skip these tasks if no changes to udev rules file?
+- name: Download ASUS USB-BT500 Linux Bluetooth driver
+  get_url:
+    url: https://dlcdnets.asus.com/pub/ASUS/wireless/USB-BT500/20200909_LINUX_BT_DRIVER_KERNEL_5.7_COEX_v0202.zip
+    dest: /tmp/20200909_LINUX_BT_DRIVER_KERNEL_5.7_COEX_v0202.zip
+
+- name: Unzip ASUS USB-BT500 Linux Bluetooth driver
+  unarchive:
+    src: /tmp/20200909_LINUX_BT_DRIVER_KERNEL_5.7_COEX_v0202.zip
+    dest: /tmp
+    remote_src: yes
+
+- name: Make Bluetooth driver
+  make:
+    chdir: /tmp/20200806_LINUX_BT_DRIVER_RTL8761B_COEX_v0202/20200806_LINUX_BT_DRIVER_RTL8761B_COEX_v0202/
+    target: install
+    params:
+      INTERFACE: usb
+  become: true
+
+- name: Disable on-board Bluetooth
+  lineinfile: 
+    path: /etc/udev/rules.d/81-bluetooth-hci.rules
+    line: SUBSYSTEM=="usb", ATTRS{idVendor}=="0e8d", ATTRS{idProduct}=="0608", ATTR{authorized}="0"
+    create: true
+  become: true
+    
+- name: Remove temporary files
+  file:
+    path: /tmp/20200806_LINUX_BT_DRIVER_RTL8761B_COEX_v0202/
+    state: absent
+
+- name: Reload Udev rules
+  command: udevadm control --reload
+  become: true

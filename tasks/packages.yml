@@ -26,6 +26,7 @@
       - jq
       - nala
       - neofetch
+      - npm
       - openssh-client
       - openssh-server
       - redshift
@@ -41,35 +42,26 @@
       - zsh
     state: latest
 
-- name: Install Discord
-  flatpak:
-    name: com.discordapp.Discord
-    state: present
+- name: Install n
+  command: npm install -g n
 
-- name: Install Postman
-  flatpak:
-    name: com.getpostman.Postman
-    state: present
+- name: Update global npm version
+  command: n latest
 
-- name: Install OBS
+- name: Install Flatpaks
   flatpak:
-    name: com.obsproject.Studio
+    name: "{{ item.name }}"
     state: present
+  loop:
+    - { name: 'com.discordapp.Discord' }
+    - { name: 'com.getpostman.Postman' }
+    - { name: 'com.obsproject.Studio' }
+    - { name: 'md.obsidian.Obsidian' }
+    - { name: 'org.DolphinEmu.dolphin-emu' }
+    - { name: 'org.onlyoffice.desktopeditors' }
 
-- name: Install Obsidian
-  flatpak:
-    name: md.obsidian.Obsidian
-    state: present
-
-- name: Install Dolphin
-  flatpak:
-    name: org.DolphinEmu.dolphin-emu
-    state: present
-
-- name: Install OnlyOffice
-  flatpak:
-    name: org.onlyoffice.desktopeditors
-    state: present
+- name: Update Flatpaks
+  command: flatpak update -y
 
 - name: Install Qemu/Virt-Manager
   apt:
@@ -116,6 +108,10 @@
     state: absent
     purge: true
     
+- name: Install Visual Studio Code
+  apt:
+    deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+
 - name: Remove dependencies that are no longer required
   apt:
     autoremove: yes

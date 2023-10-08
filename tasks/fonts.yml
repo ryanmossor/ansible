@@ -1,0 +1,81 @@
+# TODO: Create reusable template
+# TODO: check fonts already installed?
+
+- name: Ensure directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /tmp/FiraCode
+    - /tmp/FiraCodeNerd
+    - /tmp/CascadiaCode
+
+- name: Download FiraCode
+  get_url:
+    url: https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip
+    dest: /tmp/FiraCode.zip
+
+- name: Unzip FiraCode
+  unarchive:
+    src: /tmp/FiraCode.zip
+    dest: /tmp/FiraCode
+    remote_src: yes
+
+- name: Move FiraCode fonts
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.fonts"
+  with_fileglob:
+    - /tmp/FiraCode/ttf/*.ttf
+
+- name: Download FiraCodeNerd 
+  get_url:
+    url: https://github.com/ryanoasis/nerd-fonts/releases/download/v3.0.2/FiraCode.zip
+    dest: /tmp/FiraCodeNerd.zip
+
+- name: Unzip FiraCodeNerd
+  unarchive:
+    src: /tmp/FiraCodeNerd.zip
+    dest: /tmp/FiraCodeNerd
+    remote_src: yes
+
+- name: Move FiraCodeNerd fonts
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.fonts"
+  with_fileglob:
+    - /tmp/FiraCodeNerd/*.ttf
+
+- name: Download CascadiaCode
+  get_url:
+    url: https://github.com/microsoft/cascadia-code/releases/download/v2111.01/CascadiaCode-2111.01.zip 
+    dest: /tmp/CascadiaCode.zip
+
+- name: Unzip CascadiaCode
+  unarchive:
+    src: /tmp/CascadiaCode.zip
+    dest: /tmp/CascadiaCode
+    remote_src: yes
+
+- name: Move CascadiaCode fonts
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.fonts"
+  with_fileglob:
+    - /tmp/CascadiaCode/ttf/*.ttf
+
+- name: Font cleanup
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/FiraCode
+    - /tmp/FiraCode.zip
+    - /tmp/FiraCodeNerd
+    - /tmp/FiraCodeNerd.zip
+    - /tmp/CascadiaCode
+    - /tmp/CascadiaCode.zip
+
+- name: Reload font cache
+  command: fc-cache -vf

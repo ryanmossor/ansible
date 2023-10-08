@@ -1,14 +1,56 @@
 ---
 
 - hosts: localhost
-  become: yes
   pre_tasks:
+    - name: Ensure directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ ansible_env.HOME }}/Applications/"
+        - "{{ ansible_env.HOME }}/.fonts/"
+        - "{{ ansible_env.HOME }}/.config/" # can probably delete this line because of stow
+        - "{{ ansible_env.HOME }}/.linuxmint/mintwelcome/"
+        - "{{ ansible_env.HOME }}/.local/share/cinnamon/applets"
+
+    - name: Create no-run flag
+      file:
+        path: "{{ ansible_env.HOME }}/.linuxmint/mintwelcome/norun.flag"
+        state: touch
+        mode: '0644'
+      when: ansible_facts.distribution == 'Linux Mint'
+
     - name: Update/upgrade packages
       apt: 
         upgrade: yes
         update_cache: yes
-        cache_valid_time: 43200
-      changed_when: False  
+        cache_valid_time: 3600
+      changed_when: false  
+      become: true
 
   tasks:
-    - include: tasks/packages.yml
+    # - import_tasks: tasks/test.yml
+    - name: Install packages
+      import_tasks: tasks/packages.yml
+      become: true
+
+    - name: Install Spotify
+      import_tasks: tasks/spotify.yml
+
+    - name: Install fonts
+      import_tasks: tasks/fonts.yml
+
+    - name: Setup SSH/firewall
+      import_tasks: tasks/ssh.yml
+      become: true
+
+    - name: Setup Bluetooth
+      import_tasks: tasks/bluetooth.yml
+
+    - name: Install Wii U GC adapter tool
+      import_tasks: tasks/wiiu.yml
+
+    - name: Install Xpadneo & fix Bluetooth delay
+      import_tasks: tasks/xbox.yml
+

@@ -1,0 +1,46 @@
+# TODO: check /usr/local/bin/wii-u-gc-adapter exists first
+- name: Install Wii U adapter dependencies
+  apt:
+    name:
+      - libudev-dev
+      - libusb-1.0-0
+      - libusb-1.0-0-dev
+    state: latest
+  become: true
+
+- name: Clone Wii U adapter repository
+  git:
+    repo: https://github.com/ToadKing/wii-u-gc-adapter.git
+    dest: /tmp/wii-u-gc-adapter
+  register: wiiu_clone_result
+
+- name: Build and install Wii U adapter tool
+  command: make
+  args:
+    chdir: /tmp/wii-u-gc-adapter
+  when: wiiu_clone_result.changed
+  register: wiiu_build_result
+
+- name: Move Wii U adapter tool to /usr/local/bin
+  copy:
+    src: /tmp/wii-u-gc-adapter/wii-u-gc-adapter
+    dest: /usr/local/bin
+  become: true
+  changed_when: not (wiiu_build_result is failed)
+  ignore_errors: true
+
+- name: Remove temporary files
+  file:
+    path: /tmp/wii-u-gc-adapter/
+    state: absent
+
+- name: Create udev rule to configure Wii U GC adapter for Dolphin
+  lineinfile:
+    path: /etc/udev/rules.d/51-gcadapter.rules
+    line: SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="0337", MODE="0666"
+    create: true
+  become: true
+
+- name: Reload Udev rules
+  command: udevadm control --reload
+  become: true

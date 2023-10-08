@@ -1,0 +1,39 @@
+- name: Install required packages (dkms, linux-headers)
+  apt:
+    name:
+      - dkms
+      - linux-headers-{{ ansible_kernel }}
+    state: latest
+  become: true
+
+- name: Clone Xpadneo repository
+  git:
+    repo: https://github.com/atar-axis/xpadneo.git
+    dest: /tmp/xpadneo
+  register: xpadneo_clone_result
+
+- name: Install Xpadneo
+  command: /tmp/xpadneo/install.sh
+  become: true
+
+- name: Configure Bluetooth for Xbox Controller Input Delay Fix
+  blockinfile:
+    path: /etc/bluetooth/main.conf
+    backup: true
+    block: |
+      [LE]
+      MinConnectionInterval=7
+      MaxConnectionInterval=9
+      ConnectionLatency=0
+  become: true
+
+- name: Remove temporary files
+  file:
+    path: /tmp/xpadneo/
+    state: absent
+
+- name: Restart Bluetooth Service
+  service:
+    name: bluetooth.service
+    state: restarted
+  become: true
